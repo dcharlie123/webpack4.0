@@ -3,4 +3,8 @@ $boxWidth:5rem;
     width: $boxWidth;
     height: 5rem;
     background: red;
+    background-image: url('../image/mongoDB2.jpg');
+}
+body{
+    display: flex;
 }

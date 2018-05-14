@@ -7,7 +7,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 module.exports = {
-    mode: 'production', //编译模式
+    mode: 'development', //编译模式
     entry: {
         index: './src/js/index.js', //入口文件
         vendors: ['jquery']
@@ -33,11 +33,23 @@ module.exports = {
             },
             {
                 test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-                loader: 'url-loader'
+                use: [{
+                    loader: 'url-loader',
+                    options: {
+                        limit: 10240,
+                        outputPath: '/image/',
+                    }
+                }],
             },
             {
                 test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
                 loader: 'url-loader'
+            },
+            { //在HTML中使用图片
+                test: /\.(html|html)$/,
+                use: 'html-withimg-loader',
+                include: path.join(__dirname, './src'),
+                exclude: /node_modules/
             }
         ]
     },
@@ -50,7 +62,7 @@ module.exports = {
         path: path.resolve(__dirname, './static/dist'),
         // publicPath:'/dist/'
     },
-    // devtool: '#source-map',
+    devtool: '#source-map',
     plugins: [
         new CleanWebpackPlugin([path.resolve(__dirname, './static')]),
         //启用js压缩
@@ -77,9 +89,9 @@ module.exports = {
         }),
         // new webpack.NamedModulesPlugin(), 
         // new webpack.HotModuleReplacementPlugin(),
-        // new webpack.DefinePlugin({
-        //     'process.env.NODE_ENV': JSON.stringify('production')
-        // }),
+        new webpack.DefinePlugin({
+            NODE_ENV: JSON.stringify(process.env.NODE_ENV)
+        }),
     ],
     devServer: {
         // hot: true,
@@ -87,11 +99,11 @@ module.exports = {
         inline: true, //热更新类型
         // proxy: { ...
         // }
-        proxy:{
-            "/index.php":{
-                target:"http://h5.oeeee.com/index.php",
-                changeOrigin:true,
-                secure:false
+        proxy: {
+            "/index.php": {
+                target: "http://h5.oeeee.com/index.php",
+                changeOrigin: true,
+                secure: false
             }
         }
     },
@@ -129,3 +141,8 @@ module.exports = {
         },
     }
 };
+if (process.env.NODE_ENV == 'development') {
+    console.log('这是开发环境');
+} else {
+    console.log('这是生产环境');
+}
