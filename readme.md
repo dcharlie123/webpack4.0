@@ -11,3 +11,4 @@ Scope hoisting和Tree-shaking
 }
 ```
 - webpack4对ExtractTextWebpackPlugin调整，建议选用新的CSS文件提取插件mini-css-extract-plugin
+- [webpack SplitChunksPlugin实用指南](https://juejin.im/post/5b99b9cd6fb9a05cff32007a)
