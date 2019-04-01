@@ -1,11 +1,13 @@
 {
     "presets": [
-        [
-            "env",
-            {
-                modules: false
-            }
-        ], "stage-3"
+      [
+        "env",
+        {
+          "targets": {
+            "browsers": ["last 2 versions"]
+          }
+        }
+      ]
     ],
     "plugins": ["transform-runtime"]
-}
+  }
