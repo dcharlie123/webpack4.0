@@ -1,13 +1,6 @@
 {
     "presets": [
-      [
-        "env",
-        {
-          "targets": {
-            "browsers": ["last 2 versions"]
-          }
-        }
-      ]
+      ["env"]
     ],
     "plugins": ["transform-runtime"]
   }
