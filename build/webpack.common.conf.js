@@ -77,7 +77,7 @@ const generateConfig = env => {
                         loader: "url-loader",
                         options: {
                             name: "[name]-[hash:5].min.[ext]",
-                            limit: 8 * 1024, // size <= 20KB
+                            limit: 10240, // size <= 10KB
                             publicPath: "static/",
                             outputPath: "static/"
                         }
