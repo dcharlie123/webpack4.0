@@ -20,6 +20,7 @@
     "babel-loader": "^8.0.5",
     "cache-loader": "^4.1.0",
     "clean-webpack-plugin": "^2.0.1",
+    "compression-webpack-plugin": "^1.1.12",
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^2.1.1",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",

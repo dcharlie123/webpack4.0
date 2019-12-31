@@ -6,14 +6,15 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const CompressionPlugin = require('compression-webpack-plugin');
+// const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const HappyPack = require('happypack');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const os = require('os');
 const happyThreadPool = HappyPack.ThreadPool({
     size: os.cpus().length
 });
-const BundleAnalyzerPlugin=require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
 module.exports = {
     // mode: 'development', //编译模式
@@ -28,8 +29,8 @@ module.exports = {
     output: {
         publicPath: "./",
         path: path.resolve(__dirname, './dist'),
-        filename: "js/[name]-[hash:5].bundle.js",
-        chunkFilename: "js/[name]-[hash:5].chunk.js"
+        filename: "js/[name]-[hash:8].bundle.js",
+        chunkFilename: "js/[name]-[hash:8].chunk.js"
     },
     resolve: {
         extensions: ['.js', '.vue', '.json'], //import引入时，无需写扩展名的文件
@@ -57,7 +58,7 @@ module.exports = {
                 use: [{
                     loader: "url-loader",
                     options: {
-                        name: "[name]-[hash:5].min.[ext]",
+                        name: "[name]-[hash:8].min.[ext]",
                         limit: 1024 * 5, // size <= 5KB
                         outputPath: "img/"
                     }
@@ -111,7 +112,7 @@ module.exports = {
         //多线程加快打包速度
         new HappyPack({
             id: "happyBabel",
-            loaders: ['cache-loader','babel-loader?cacheDirectory=true'],
+            loaders: ['cache-loader', 'babel-loader?cacheDirectory=true'],
             verbose: false, // Write logs to console.
             threadPool: happyThreadPool
         }),
@@ -131,6 +132,16 @@ module.exports = {
             // chunksSortMode: 'dependency' //按dependency的顺序引入
         }),
 
+        new CompressionPlugin({
+            filename: '[path].gz[query]',
+            algorithm: 'gzip',
+            // 只处理大于xx字节 的文件，默认：0
+            threshold: 10240,
+            // 示例：一个1024b大小的文件，压缩后大小为768b，minRatio : 0.75
+            minRatio: 0.8, // 默认: 0.8
+            // 是否删除源文件，默认: false
+            deleteOriginalAssets: false
+        }),
         new MiniCssExtractPlugin({ //提取为外部css代码
             filename: 'style/[name].css?v=[contenthash]',
             chunkFilename: "[id].css"
@@ -150,8 +161,8 @@ module.exports = {
             manifest: require('./vendor-manifest.json')
         }),
         new BundleAnalyzerPlugin({
-            analyzerHost:'127.0.0.1',
-            analyzerPort:8889
+            analyzerHost: '127.0.0.1',
+            analyzerPort: 8889
         })
     ],
     devServer: {
