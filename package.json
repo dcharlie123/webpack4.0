@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "webpack-dev-server --env development --open --config build/webpack.common.conf.js",
     "build": "webpack --env production --config build/webpack.common.conf.js",
-    "dll": "webpack --config ./webpack.dll.config.js"
+    "dll": "webpack --config ./webpack.dll.config.js",
+    "dev1":"webpack-dev-server --env development --open --config build1/webpack.dev.js",
+    "build1": "webpack --env production --config build1/webpack.prod.js",
+    "dev2":"webpack-dev-server --env development --open --config build2/webpack.dev.js",
+    "build2": "webpack --env production --config build2/webpack.prod.js"
   },
   "author": "",
   "license": "ISC",
