@@ -1,5 +1,5 @@
-module.exports = {
+module.exports = { // 自动添加css厂商前缀
     plugins: [
-        require('autoprefixer')('last 2 versions')
+        require('autoprefixer')
     ]
-};
+}

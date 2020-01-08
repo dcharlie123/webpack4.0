@@ -1,142 +1,120 @@
-const webpack = require("webpack");
-const merge = require("webpack-merge");
-const path = require("path");
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-// const PostCss_Sprites = require('postcss-sprites');
-const productionConfig = require("./webpack.prod.conf.js"); // 引入生产环境配置文件
-const developmentConfig = require("./webpack.dev.conf.js"); // 引入开发环境配置文件
+const path = require('path');
+const webpack = require('webpack');
+const htmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HappyPack = require('happypack');
+const os = require('os');
+const happyThreadPool = HappyPack.ThreadPool({
+    size: os.cpus().length
+});
 
-/**
- * 根据不同的环境，生成不同的配置
- * @param {String} env "development" or "production"
- */
-// let spritesConfig = {
-//     spritePath: "./dist/static"
-//   };
-const generateConfig = env => {
-
-    let scriptLoader = [{
-        loader: "babel-loader"
-    }];
-    let cssLoader = [{
-        loader: "css-loader",
-        options: {
-            // minimize: true,
-            sourceMap: env === "development" ? true : false // 开发环境：开启source-map
-        }
-    }, {
-        loader: "postcss-loader"
-    }, {
-        loader: "sass-loader"
-    }];
-    let styleLoader =
-        env === "production" ?
-        ExtractTextPlugin.extract({
-            // 生产环境：分离、提炼样式文件
-            fallback: {
-                loader: "style-loader"
-            },
-            use: cssLoader
-        }) : // 开发环境：页内样式嵌入
-        ['style-loader', ...cssLoader];
-    return {
-        entry: {
-            app: "./src/index.js",
-            vendors: ['jquery']
-        },
-        output: {
-            publicPath: env === "development" ? "/" : "./",
-            path: path.resolve(__dirname, '../dist'),
-            filename: "[name]-[hash:5].bundle.js",
-            chunkFilename: "[name]-[hash:5].chunk.js"
-        },
-        module: {
-            rules: [{
-                    test: /\.js$/,
-                    exclude: /(node_modules)/,
-                    use: scriptLoader
-                },
-                {
-                    test: /\.s?[ac]ss$/,
-                    use: styleLoader
-                }, {
-                    test: /\.(eot|woff2?|ttf|svg)$/,
-                    use: [{
-                        loader: "url-loader",
-                        options: {
-                            name: "[name]-[hash:5].min.[ext]",
-                            limit: 5000, // fonts file size <= 5KB, use 'base64'; else, output svg file
-                            publicPath: "fonts/",
-                            outputPath: "fonts/"
-                        }
-                    }]
-                }, {
-                    test: /\.(png|jpg|jpeg|gif)$/,
-                    use: [{
-                        loader: "url-loader",
-                        options: {
-                            name: "[name]-[hash:5].min.[ext]",
-                            limit: 10240, // size <= 10KB
-                            publicPath: "static/",
-                            outputPath: "static/"
-                        }
-                    }, {
-                        loader: 'img-loader',
-                        options: {
-                            plugins: [
-                                require('imagemin-gifsicle')({
-                                    interlaced: false
-                                }),
-                                require('imagemin-mozjpeg')({
-                                    progressive: true,
-                                    arithmetic: false
-                                }),
-                                require('imagemin-pngquant')({
-
-                                    floyd: 0.5,
-                                    speed: 2
-                                }),
-                                require('imagemin-svgo')({
-                                    plugins: [{
-                                            removeTitle: true
-                                        },
-                                        {
-                                            convertPathData: false
-                                        }
-                                    ]
-                                })
-                            ]
-                        }
-                    }]
-                },
-                { //在HTML中使用图片
-                    test: /\.(html|html)$/,
-                    use: 'html-withimg-loader',
-                    include: path.join(__dirname, '../'),
-                    exclude: /node_modules/
-                }
-
-            ]
-        },
-        plugins: [
-            // 开发环境和生产环境二者均需要的插件
-            new HtmlWebpackPlugin({
-                filename: "index.html",
-                template: path.resolve(__dirname, "..", "index.html"),
-                chunks: ["app", 'vendors', 'manifest'],
-                minify: {
-                    collapseWhitespace: true,
-                    removeComments: true
-                }
-            }),
-            new webpack.ProvidePlugin({
-                $: "jquery"
-            })
-        ]
+function assetsPath(_path_) {
+    let assetsSubDirectory;
+    if (process.env.NODE_ENV === 'production') {
+        assetsSubDirectory = 'static' //可根据实际情况修改
+    } else {
+        assetsSubDirectory = 'static'
     }
+    return path.posix.join(assetsSubDirectory, _path_)
 }
-module.exports = env => {
-    let config = env === "production" ? productionConfig : developmentConfig;
-    return merge(generateConfig(env), config);
-};
+
+function resolve(dir) {
+    return path.join(__dirname, '..', dir)
+}
+module.exports = {
+    context: path.resolve(__dirname, '../'),
+    entry: {
+        index: "./src/index.js"
+    },
+    output: {
+        path: path.resolve(__dirname, '../dist'),
+        filename: 'js/[name].js'
+    },
+    resolve: {
+        extensions: [".js", ".css", ".json"],
+        alias: {} //配置别名可以加快webpack查找模块的速度
+    },
+    module: {
+        rules: [{
+                test: /\.js$/,
+                loader: 'happypack/loader?id=happyBabel',
+                include: [resolve('src')],
+                exclude: /node_modules/,
+            },
+            {
+                test: /\.css$/,
+                use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'],
+                include: [resolve('src')],
+                exclude: /node_modules/,
+            },
+            {
+                test: /\.less$/,
+                use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'less-loader'],
+                include: [resolve('src')],
+                exclude: /node_modules/,
+            },
+            { //file-loader 解决css等文件中引入图片路径的问题
+                // url-loader 当图片较小的时候会把图片BASE64编码，大于limit参数的时候还是使用file-loader 进行拷贝
+                test: /\.(png|jpg|jpeg|gif|svg)/,
+                use: {
+                    loader: 'url-loader',
+                    options: {
+                        name: assetsPath('images/[name].[hash:7].[ext]'), // 图片输出的路径
+                        limit: 1 * 1024
+                    }
+                }
+            },
+            { //在HTML中使用图片
+                test: /\.(html|html)$/,
+                use: 'html-withimg-loader',
+                include: path.join(__dirname, '../'),
+                exclude: /node_modules/
+            }
+        ],
+    },
+    optimization: { //webpack4.x的最新优化配置项，用于提取公共代码
+
+        splitChunks: {
+            cacheGroups: {
+                commons: {
+                    chunks: "initial",
+                    name: "common",
+                    minChunks: 2,
+                    maxInitialRequests: 5, // The default limit is too small to showcase the effect
+                    minSize: 0, // This is example is too small to create commons chunks
+                    reuseExistingChunk: true // 可设置是否重用该chunk（查看源码没有发现默认值）
+                }
+            }
+        }
+    },
+    plugins: [
+        //多线程加快打包速度
+        new HappyPack({
+            id: "happyBabel",
+            loaders: ['cache-loader', 'babel-loader?cacheDirectory=true'],
+            verbose: false, // Write logs to console.
+            threadPool: happyThreadPool
+        }),
+        new htmlWebpackPlugin({
+            template: 'src/index.html',
+            filename: 'index.html',
+            minify: { //压缩配置
+                removeComments: true, //删除html中的注释代码
+                collapseWhitespace: true, //删除html中的空白符
+                removeAttributeQuotes: true //删除html元素中属性的引号
+            }
+        }),
+        //自动加载模块，而不必到处 import 或 require 
+        new webpack.ProvidePlugin({
+            $: 'jquery'
+        }),
+        //环境变量
+        new webpack.DefinePlugin({
+            NODE_ENV: JSON.stringify(process.env.NODE_ENV)
+        }),
+        new MiniCssExtractPlugin({
+            filename: "css/[name].[hash:8].css",
+            chunkFilename: "css/[id].css"
+        }),
+    ]
+}

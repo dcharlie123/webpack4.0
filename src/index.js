@@ -1,13 +1,18 @@
-import './css/style.scss';
-import "./js/b.js";
-import "./js/d.js";
+import './css/style.css';
+import './css/common.less';
 
-import {PI} from './js/a';
-
-const hi="hello";
-let text=`${hi} world`;
-console.log(text);
-$(function(){
-    console.log(PI)
-})
-const AA='nin';//测试js tree Shaking
+console.log(111);
+const a = 'hello';
+console.log(a);
+console.log($);
+console.log(NODE_ENV);
+class Point {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.a="aaa"
+    };
+    getX() {
+        return this.x;
+    }
+}

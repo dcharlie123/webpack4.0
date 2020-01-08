@@ -1,5 +1,2 @@
+dist/
 node_modules
-npm_*
-static/*
-dist/*
-yarn-error.log
